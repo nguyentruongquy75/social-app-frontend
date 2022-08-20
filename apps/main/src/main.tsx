@@ -5,10 +5,17 @@ import { BrowserRouter } from 'react-router-dom';
 import * as ReactDOM from 'react-dom/client';
 
 import App from './app/app';
+import { createTheme, ThemeProvider } from '@mui/material';
 
 const root = ReactDOM.createRoot(
   document.getElementById('root') as HTMLElement
 );
+
+const theme = createTheme({
+  typography: {
+    fontFamily: 'Segoe UI',
+  },
+});
 
 root.render(
   <SWRConfig
@@ -16,12 +23,14 @@ root.render(
       refreshInterval: 1000,
     }}
   >
-    <BrowserRouter>
-      <RecoilRoot>
-        <StrictMode>
-          <App />
-        </StrictMode>
-      </RecoilRoot>
-    </BrowserRouter>
+    <ThemeProvider theme={theme}>
+      <BrowserRouter>
+        <RecoilRoot>
+          <StrictMode>
+            <App />
+          </StrictMode>
+        </RecoilRoot>
+      </BrowserRouter>
+    </ThemeProvider>
   </SWRConfig>
 );

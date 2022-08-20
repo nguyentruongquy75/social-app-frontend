@@ -1,4 +1,4 @@
-import { Box, Grid, Stack } from '@mui/material';
+import { Box, Grid, Paper, Stack } from '@mui/material';
 import { Search, Chat, Notifications } from '@mui/icons-material';
 import LogoS from 'apps/main/src/assets/images/logoS.png';
 import Avatar from 'apps/main/src/assets/images/default-avatar.png';
@@ -33,6 +33,8 @@ export function Header({}: Props) {
           p: '8px 0',
         }}
         className="header"
+        component={Paper}
+        elevation={1}
       >
         <ContainerAtom>
           <Grid container justifyContent="space-between">

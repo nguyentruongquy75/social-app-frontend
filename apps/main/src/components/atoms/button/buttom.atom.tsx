@@ -5,6 +5,8 @@ type Props = {
   onClick?: () => void;
   normalize?: boolean;
   sx?: any;
+  fullWidth?: boolean;
+  className?: string;
 };
 
 export function ButtonAtom({
@@ -12,13 +14,21 @@ export function ButtonAtom({
   onClick,
   normalize = true,
   sx = {},
+  fullWidth,
+  className,
 }: Props) {
   let classes = 'button ';
-  if (normalize) classes = classes.concat('normalize');
+  if (normalize) classes = classes.concat('normalize ');
+  if (className) classes = classes.concat(className + ' ');
 
   return (
     <>
-      <Button sx={sx} onClick={onClick} className={classes}>
+      <Button
+        sx={sx}
+        onClick={onClick}
+        className={classes}
+        fullWidth={fullWidth}
+      >
         {children}
       </Button>
 

@@ -2,6 +2,8 @@ import { Route, Router, Routes } from 'react-router-dom';
 import { BaseLayout } from '../components/templates/layout/base.layout';
 import { HomePage } from '../pages';
 import { AuthPage } from '../pages/AuthPage';
+import { FriendPage } from '../pages/FriendPage';
+import { ProfilePage } from '../pages/ProfilePage';
 
 export function App() {
   return (
@@ -10,7 +12,9 @@ export function App() {
         <Route path="/auth/:type" element={<AuthPage />} />
       </Routes> */}
 
-      <HomePage />
+      {/* <FriendPage /> */}
+
+      <ProfilePage />
 
       <style jsx global>
         {`

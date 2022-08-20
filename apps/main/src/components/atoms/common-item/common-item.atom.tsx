@@ -8,7 +8,7 @@ import { Link } from 'react-router-dom';
 
 type Props = {
   image?: string;
-  title: string;
+  title?: string;
   styleImage?: any;
   styleTypograpy?: any;
   link?: string;

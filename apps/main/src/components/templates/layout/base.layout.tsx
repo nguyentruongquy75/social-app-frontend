@@ -8,14 +8,22 @@ type Props = {
   right?: JSX.Element;
   main?: JSX.Element;
   column: number;
+  leftBackground?: string;
 };
 
 const LAYOUT = {
+  ONE_COLUM: 1,
   TWO_COLUMN: 2,
   THREE_COLUMN: 3,
 };
 
-export function BaseLayout({ left, right, main, column }: Props) {
+export function BaseLayout({
+  left,
+  right,
+  main,
+  column,
+  leftBackground,
+}: Props) {
   const gridLayoutColumn = {
     left: {
       xs: 0,
@@ -31,9 +39,25 @@ export function BaseLayout({ left, right, main, column }: Props) {
     },
   };
 
-  const isThreeColumn = column === LAYOUT.THREE_COLUMN;
+  const isThreeColumnOrOneColumn =
+    column === LAYOUT.THREE_COLUMN || column === LAYOUT.ONE_COLUM;
 
   switch (column) {
+    case LAYOUT.ONE_COLUM:
+      gridLayoutColumn.left = {
+        xs: 0,
+        md: 0,
+      };
+      gridLayoutColumn.main = {
+        xs: 12,
+        md: 12,
+      };
+      gridLayoutColumn.right = {
+        xs: 0,
+        md: 0,
+      };
+      break;
+
     case LAYOUT.THREE_COLUMN:
       gridLayoutColumn.left = {
         xs: 0,
@@ -67,7 +91,7 @@ export function BaseLayout({ left, right, main, column }: Props) {
   return (
     <>
       <Header />
-      <ContainerAtom sx={{ paddingTop: HEADER_HEIGHT + 'px' }}>
+      <ContainerAtom sx={{ paddingTop: HEADER_HEIGHT + 'px' }} disablePadding>
         <Grid container>
           <Grid
             item
@@ -75,9 +99,10 @@ export function BaseLayout({ left, right, main, column }: Props) {
             md={gridLayoutColumn.left.md}
             sx={{
               display: {
-                xs: isThreeColumn ? 'none' : 'block',
+                xs: isThreeColumnOrOneColumn ? 'none' : 'block',
                 md: 'block',
               },
+              background: leftBackground,
             }}
             className="sticky"
           >
@@ -96,7 +121,7 @@ export function BaseLayout({ left, right, main, column }: Props) {
             md={gridLayoutColumn.right.md}
             sx={{
               display: {
-                xs: isThreeColumn ? 'none' : 'block',
+                xs: isThreeColumnOrOneColumn ? 'none' : 'block',
                 md: 'block',
               },
             }}

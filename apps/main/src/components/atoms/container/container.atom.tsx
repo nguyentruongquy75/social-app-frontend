@@ -4,11 +4,12 @@ import React from 'react';
 type Props = {
   children?: JSX.Element | JSX.Element[] | string;
   sx?: any;
+  disablePadding?: boolean;
 };
 
-export function ContainerAtom({ children, sx }: Props) {
+export function ContainerAtom({ children, sx, disablePadding }: Props) {
   return (
-    <Container sx={sx} maxWidth={false}>
+    <Container sx={sx} maxWidth={false} disableGutters={disablePadding}>
       {children}
     </Container>
   );

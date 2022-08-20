@@ -1,12 +1,16 @@
 import { Route, Router, Routes } from 'react-router-dom';
+import { BaseLayout } from '../components/templates/layout/base.layout';
+import { HomePage } from '../pages';
 import { AuthPage } from '../pages/AuthPage';
 
 export function App() {
   return (
     <>
-      <Routes>
+      {/* <Routes>
         <Route path="/auth/:type" element={<AuthPage />} />
-      </Routes>
+      </Routes> */}
+
+      <HomePage />
 
       <style jsx global>
         {`

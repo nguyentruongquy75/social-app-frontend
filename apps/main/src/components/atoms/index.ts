@@ -6,3 +6,4 @@ export * from './title/title.atom';
 export * from './tooltip-count/tooltip-count.atom';
 export * from './common-notification-popover/common-notification-popover.atom';
 export * from './input/input.atom';
+export * from './button/buttom.atom';

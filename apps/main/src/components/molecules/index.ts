@@ -9,3 +9,5 @@ export * from './post-comments/post-comments.molecule';
 export * from './notification-popover/notification-popover.molecule';
 export * from './chat-popover/chat-popover.molecule';
 export * from './chat-room-popover/chat-room-popover.molecule';
+export * from './profile-bio/profile-bio.molecule';
+export * from './post-create-dialog/post-create-dialog.molecule';

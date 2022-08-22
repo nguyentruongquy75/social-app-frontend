@@ -1,3 +1,4 @@
+import { ToastContainer } from 'react-toastify';
 import { Route, Router, Routes } from 'react-router-dom';
 import { BaseLayout } from '../components/templates/layout/base.layout';
 import { HomePage } from '../pages';
@@ -5,16 +6,20 @@ import { AuthPage } from '../pages/AuthPage';
 import { FriendPage } from '../pages/FriendPage';
 import { ProfilePage } from '../pages/ProfilePage';
 
+import 'react-toastify/dist/ReactToastify.css';
+
 export function App() {
   return (
     <>
-      {/* <Routes>
+      <Routes>
         <Route path="/auth/:type" element={<AuthPage />} />
-      </Routes> */}
+      </Routes>
 
       {/* <FriendPage /> */}
 
-      <ProfilePage />
+      {/* <ProfilePage /> */}
+
+      <ToastContainer autoClose={2000} hideProgressBar />
 
       <style jsx global>
         {`

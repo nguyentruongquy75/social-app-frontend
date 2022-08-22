@@ -4,21 +4,28 @@ import {
   Button,
   Divider,
   Grid,
+  MenuItem,
+  Select,
   TextField,
   Typography,
 } from '@mui/material';
+import { registerApi } from 'apps/main/src/api';
 import {
   FIELD_IS_REQUIRED,
   INVALID_FIELD,
   MIN_LENGTH_FIELD,
   MIN_LENGTH_PASSWORD,
+  USER_STATUS,
 } from 'apps/main/src/constants';
+import { userState } from 'apps/main/src/stores';
 import {
   getFormMessage,
   getMinLengthMessage,
 } from 'apps/main/src/utils/message';
 import { useForm } from 'react-hook-form';
-import { object, string } from 'zod';
+import { useNavigate } from 'react-router-dom';
+import { useRecoilState } from 'recoil';
+import { object, string, z } from 'zod';
 import AuthBox from '../../atoms/auth-box/auth-box.atom';
 
 const RegisterFormSchema = object({
@@ -31,18 +38,38 @@ const RegisterFormSchema = object({
     MIN_LENGTH_PASSWORD,
     getMinLengthMessage(MIN_LENGTH_FIELD, 'Mật khẩu', MIN_LENGTH_PASSWORD)
   ),
+  status: string(),
 });
 
 type Props = {};
 
 function RegisterForm({}: Props) {
+  const [_, setUser] = useRecoilState(userState);
+  const navigate = useNavigate();
+
   const {
     register,
     formState: { errors, isSubmitSuccessful },
     handleSubmit,
   } = useForm({ resolver: zodResolver(RegisterFormSchema) });
 
-  const onSubmit = (values: any) => console.log(values);
+  const onSubmit = async (values: any) => {
+    const user = await registerApi({
+      fullName: values.lastName + ' ' + values.firstName,
+      email: values.email,
+      password: values.password,
+      status: values.status,
+    });
+
+    if (user) {
+      const saveUser = { ...user.user };
+      delete saveUser.password;
+      delete saveUser.email;
+      navigate('/');
+      setUser(saveUser);
+      localStorage.setItem('token', user.jwt_token);
+    }
+  };
 
   const isError = (field: string) => !!errors[field];
 
@@ -100,6 +127,17 @@ function RegisterForm({}: Props) {
                 error={isError('password')}
                 helperText={getErrorMessage('password')}
               />
+            </Grid>
+
+            <Grid item xs={12}>
+              <Select defaultValue="Single" {...register('status')}>
+                {USER_STATUS.map((status) => (
+                  <MenuItem key={status.value} value={status.value}>
+                    {' '}
+                    {status.label}
+                  </MenuItem>
+                ))}
+              </Select>
             </Grid>
 
             <Grid item xs={12}>

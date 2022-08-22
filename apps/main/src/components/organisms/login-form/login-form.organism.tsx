@@ -1,4 +1,5 @@
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
 import { object, string } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
 
@@ -15,6 +16,9 @@ import {
   getMinLengthMessage,
 } from 'apps/main/src/utils/message';
 import AuthBox from '../../atoms/auth-box/auth-box.atom';
+import { loginApi } from 'apps/main/src/api';
+import { useRecoilState } from 'recoil';
+import { userState } from 'apps/main/src/stores';
 
 type Props = {};
 
@@ -31,6 +35,8 @@ const LoginFormSchema = object({
 });
 
 function LoginForm({}: Props) {
+  const [_, setUser] = useRecoilState(userState);
+  const navigate = useNavigate();
   const {
     register,
     formState: { errors, isSubmitSuccessful },
@@ -38,7 +44,23 @@ function LoginForm({}: Props) {
     handleSubmit,
   } = useForm({ resolver: zodResolver(LoginFormSchema) });
 
-  const onSubmit = (values: any) => console.log(values);
+  const onSubmit = async (values: any) => {
+    const user = await loginApi({
+      email: values.email,
+      password: values.password,
+    });
+
+    if (user) {
+      const saveUser = { ...user.user };
+      delete saveUser.password;
+      delete saveUser.email;
+      localStorage.setItem('token', user.jwt_token);
+      setUser(saveUser);
+      navigate('/');
+    }
+  };
+
+  const navigateToSignUp = () => navigate('/auth/register');
 
   return (
     <AuthBox>
@@ -94,6 +116,7 @@ function LoginForm({}: Props) {
               textTransform: 'none',
             }}
             size="large"
+            onClick={navigateToSignUp}
           >
             Tạo tài khoản mới
           </Button>

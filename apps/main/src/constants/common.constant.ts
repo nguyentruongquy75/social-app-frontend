@@ -44,3 +44,31 @@ export const DEFAULT_SUBTITLE_FONT_SIZE = 13;
 export const MUI_COLUMN = 12;
 export const MUI_DEFAULT_ONE_UNIT = 8;
 export const HEADER_HEIGHT = 56;
+export const USER_STATUS = [
+  {
+    value: 'Single',
+    label: 'Độc thân',
+  },
+  {
+    value: 'In Relationship',
+    label: 'Hẹn hò',
+  },
+  { value: 'Engaged', label: 'Đã đính hôn' },
+  {
+    value: 'Married',
+    label: 'Đã kết hôn',
+  },
+  {
+    value: 'Registered cohabitation',
+    label: 'Chung sống có đăng ký',
+  },
+  {
+    value: 'Cohabitation',
+    label: 'Chung sống',
+  },
+  {
+    value: 'Find out',
+    label: 'Tìm hiểu',
+  },
+];
+export const RECOIL_KEY = 'ishare-key';

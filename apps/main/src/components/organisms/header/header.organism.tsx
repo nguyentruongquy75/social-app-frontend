@@ -1,4 +1,4 @@
-import { Box, Grid, Paper, Stack } from '@mui/material';
+import { Badge, Box, Grid, Paper, Stack } from '@mui/material';
 import { Search, Chat, Notifications } from '@mui/icons-material';
 import LogoS from 'apps/main/src/assets/images/logoS.png';
 import Avatar from 'apps/main/src/assets/images/default-avatar.png';
@@ -7,6 +7,11 @@ import { SearchButtonMolecule } from '../../molecules/search-button/search-butto
 import { ContainerAtom, CommonNotificationPopoverAtom } from '../../atoms';
 import { usePopover } from 'apps/main/src/hooks';
 import { ChatPopoverMolecule, NotificationPopover } from '../../molecules';
+import useSWR from 'swr';
+import { CHAT_ENDPOINT, NOTIFICATION_ENDPOINT } from 'apps/main/src/constants';
+import { fetcher } from 'apps/main/src/api/fetcher';
+
+import red from '@mui/material/colors/red';
 
 type Props = {};
 
@@ -25,6 +30,12 @@ export function Header({}: Props) {
     anchorEl: chatAnchor,
   } = usePopover();
 
+  const { data: notifications } = useSWR(NOTIFICATION_ENDPOINT.GET, (url) =>
+    fetcher(url)
+  );
+
+  const { data: chatrooms } = useSWR(CHAT_ENDPOINT.BASE, (url) => fetcher(url));
+
   return (
     <>
       <Box
@@ -40,7 +51,7 @@ export function Header({}: Props) {
           <Grid container justifyContent="space-between">
             <Grid item xs={6}>
               <Stack direction="row" gap={1}>
-                <IconButtonAtom sx={{ p: 0 }}>
+                <IconButtonAtom sx={{ p: 0 }} to="/">
                   <Box component="img" src={LogoS} />
                 </IconButtonAtom>
 
@@ -54,12 +65,17 @@ export function Header({}: Props) {
                   <Chat />
                 </IconButtonAtom>
 
-                <IconButtonAtom
-                  tooltip="Thông báo"
-                  onClick={displayNotificationPopover}
+                <Badge
+                  badgeContent={notifications?.unreadNotificationCount}
+                  color="primary"
                 >
-                  <Notifications />
-                </IconButtonAtom>
+                  <IconButtonAtom
+                    tooltip="Thông báo"
+                    onClick={displayNotificationPopover}
+                  >
+                    <Notifications />
+                  </IconButtonAtom>
+                </Badge>
 
                 <IconButtonAtom sx={{ p: 0 }} tooltip="Tài khoản">
                   <Box
@@ -78,12 +94,14 @@ export function Header({}: Props) {
         open={isDisplayNotificationPopover}
         anchorEl={notificationAnchor}
         onClose={hideNotificationPopoover}
+        notifications={notifications}
       />
 
       <ChatPopoverMolecule
         open={isDisplayChatPopover}
         anchorEl={chatAnchor}
         onClose={hideChatPopoover}
+        chatrooms={chatrooms}
       />
 
       <style jsx global>

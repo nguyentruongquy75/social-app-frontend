@@ -11,7 +11,7 @@ import { CommonItemAtom } from '../../atoms';
 
 import Avatar from 'apps/main/src/assets/images/default-avatar.png';
 import { MoreHoriz } from '@mui/icons-material';
-import { usePopover } from 'apps/main/src/hooks';
+import { useLoading, usePopover } from 'apps/main/src/hooks';
 import {
   MoreButtonMolecule,
   PostActions,
@@ -20,22 +20,47 @@ import {
   PostInfo,
 } from '../../molecules';
 import { CommentItemMolecule } from '../../molecules/comment-item/comment-item.molecule';
+import { useState } from 'react';
+import { handleTimeString } from 'apps/main/src/utils/time';
+import { deletePostApi } from 'apps/main/src/api/post/delete';
+import { useRecoilState } from 'recoil';
+import { userState } from 'apps/main/src/stores';
+import { LoadingAtom } from '../../atoms/loading/loading.atom';
 
-type Props = {};
+type Props = {
+  comments: any[];
+  reactions: any[];
+  id: number;
+  images: string[];
+  createdAt: string;
+  updatedAt: string;
+  title: string;
+  user: any;
+};
 
-const images = [
-  'https://images.pexels.com/photos/248797/pexels-photo-248797.jpeg?auto=compress&cs=tinysrgb&h=550',
-  'https://www.gettyimages.ie/gi-resources/images/Homepage/Hero/UK/CMS_Creative_164657191_Kingfisher.jpg',
-  'https://cdn.pixabay.com/photo/2016/10/27/22/53/heart-1776746_960_720.jpg',
-  'https://images.pexels.com/photos/257840/pexels-photo-257840.jpeg?auto=compress&cs=tinysrgb&h=350',
-  'https://images.pexels.com/photos/67636/rose-blue-flower-rose-blooms-67636.jpeg?auto=compress&cs=tinysrgb&h=350',
-  'https://images.pexels.com/photos/67636/rose-blue-flower-rose-blooms-67636.jpeg?auto=compress&cs=tinysrgb&h=350',
-];
+export function PostCardOrganism({
+  user,
+  title,
+  images,
+  reactions,
+  comments,
+  id,
+  createdAt,
+}: Props) {
+  const [userStore, _] = useRecoilState(userState);
+  const [isDisplayPostComments, setIsDisplayPostComments] = useState(false);
+  const { isLoading, startLoading, endLoading } = useLoading();
 
-export function PostCardOrganism({}: Props) {
+  const displayPostComment = () => setIsDisplayPostComments(true);
+
+  const deletePost = async () => {
+    startLoading();
+    await deletePostApi(id);
+  };
+
   return (
     <>
-      <Card>
+      <Card sx={{ position: 'relative' }}>
         <Stack
           direction="row"
           alignItems="center"
@@ -48,23 +73,31 @@ export function PostCardOrganism({}: Props) {
           <CommonItemAtom
             roundedImage
             imageSize={40}
-            image={Avatar}
-            title="Nguyễn Trường Quý"
-            subtitle="1 giờ"
+            image={user.avatarImage ?? Avatar}
+            title={user.fullName}
+            subtitle={handleTimeString(createdAt)}
           />
 
-          <MoreButtonMolecule />
+          {userStore.id === user.id && (
+            <MoreButtonMolecule onDelete={deletePost} />
+          )}
         </Stack>
 
-        <PostContent content="Hello" />
+        <PostContent content={title} />
 
         <PostImagesMolecule images={images} />
 
-        <PostInfo />
+        <PostInfo comments={comments} reactions={reactions} postId={id} />
 
-        <PostActions />
+        <PostActions
+          postId={id}
+          reactions={reactions}
+          displayPostComment={displayPostComment}
+        />
 
-        <PostCommentMolecule />
+        {isDisplayPostComments && <PostCommentMolecule postId={id} />}
+
+        {isLoading && <LoadingAtom circular />}
       </Card>
     </>
   );

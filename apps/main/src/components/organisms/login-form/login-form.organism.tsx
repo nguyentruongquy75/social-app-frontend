@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { object, string } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -17,7 +17,7 @@ import {
 } from 'apps/main/src/utils/message';
 import AuthBox from '../../atoms/auth-box/auth-box.atom';
 import { loginApi } from 'apps/main/src/api';
-import { useRecoilState } from 'recoil';
+import { useRecoilState, useResetRecoilState } from 'recoil';
 import { userState } from 'apps/main/src/stores';
 
 type Props = {};
@@ -36,6 +36,7 @@ const LoginFormSchema = object({
 
 function LoginForm({}: Props) {
   const [_, setUser] = useRecoilState(userState);
+  const resetUserState = useResetRecoilState(userState);
   const navigate = useNavigate();
   const {
     register,
@@ -61,6 +62,10 @@ function LoginForm({}: Props) {
   };
 
   const navigateToSignUp = () => navigate('/auth/register');
+
+  useEffect(() => {
+    resetUserState();
+  }, []);
 
   return (
     <AuthBox>

@@ -1,37 +1,66 @@
 import { Box, Stack, Tooltip, Typography } from '@mui/material';
 
-import LikeIcon from 'apps/main/src/assets/images/like.png';
-import HahaIcon from 'apps/main/src/assets/images/haha.png';
 import { TooltipCountAtom } from '../../atoms';
 import { useDisplay } from 'apps/main/src/hooks';
 import { ReactionDialog } from '../reaction-dialog/reaction-dialog.molecule';
+import { getMostPopularReaction } from 'apps/main/src/utils/reactions';
 
-export function PostInfo() {
+type Props = {
+  comments: any[];
+  reactions: any[];
+  postId: number;
+};
+
+export function PostInfo({ comments, reactions, postId }: Props) {
   const { close, open, isDisplay } = useDisplay();
+
+  const mostReaction = getMostPopularReaction(reactions);
 
   return (
     <>
       <Box className="post-info-container">
         <Stack direction="row" justifyContent="space-between">
           <Stack direction="row" alignItems="center">
-            <Tooltip title={<TooltipCountAtom title="Thích" />}>
-              <Box
-                component="img"
-                src={LikeIcon}
-                className="reaction-icon"
-                onClick={open}
-              />
+            {mostReaction.map((reaction) => (
+              <Tooltip
+                key={reaction.label}
+                title={
+                  <TooltipCountAtom
+                    title={reaction.label}
+                    url={`post/${postId}/reactions/${reaction.type}`}
+                  />
+                }
+              >
+                <Box
+                  component="img"
+                  src={reaction.icon}
+                  className="reaction-icon"
+                  onClick={open}
+                />
+              </Tooltip>
+            ))}
+
+            <Tooltip
+              title={<TooltipCountAtom url={`post/${postId}/reactions`} />}
+            >
+              <Typography className="post-info-text">
+                {reactions.length > 0 && reactions.length}
+              </Typography>
             </Tooltip>
-            <Box component="img" src={HahaIcon} className="reaction-icon" />
-            <Typography className="post-info-text">11</Typography>
           </Stack>
           <Box>
-            <Typography className="post-info-text">74 bình luận</Typography>
+            <Tooltip
+              title={<TooltipCountAtom url={`post/${postId}/comments`} />}
+            >
+              <Typography className="post-info-text">
+                {comments.length > 0 && `${comments.length} bình luận`}
+              </Typography>
+            </Tooltip>
           </Box>
         </Stack>
       </Box>
 
-      <ReactionDialog open={isDisplay} onClose={close} />
+      <ReactionDialog open={isDisplay} onClose={close} postId={postId} />
 
       <style jsx global>
         {`

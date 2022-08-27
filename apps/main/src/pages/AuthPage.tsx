@@ -6,7 +6,7 @@ import { AuthLayout } from '../components/templates';
 type Props = {};
 
 const AUTH_SCREEN = {
-  LOGIN: 'login',
+  SIGNIN: 'signin',
   REGISTER: 'register',
 };
 
@@ -15,7 +15,7 @@ export function AuthPage({}: Props) {
 
   let screen: undefined | JSX.Element = undefined;
 
-  if (type === AUTH_SCREEN.LOGIN) screen = <LoginForm />;
+  if (type === AUTH_SCREEN.SIGNIN) screen = <LoginForm />;
   if (type === AUTH_SCREEN.REGISTER) screen = <RegisterForm />;
 
   return <AuthLayout>{screen}</AuthLayout>;

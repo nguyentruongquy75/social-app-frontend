@@ -1,12 +1,23 @@
 import { InputBase } from '@mui/material';
+import { ChangeEvent, KeyboardEvent } from 'react';
 
 type Props = {
   placeholder?: string;
   sx?: any;
   onClick?: () => void;
+  onChange?: (e: ChangeEvent<HTMLInputElement>) => void;
+  value?: string;
+  onKeyUp?: (e: KeyboardEvent<HTMLInputElement>) => void;
 };
 
-export function InputAtom({ placeholder, sx, onClick }: Props) {
+export function InputAtom({
+  placeholder,
+  sx,
+  onClick,
+  onChange,
+  value,
+  onKeyUp,
+}: Props) {
   return (
     <>
       <InputBase
@@ -15,6 +26,9 @@ export function InputAtom({ placeholder, sx, onClick }: Props) {
         fullWidth
         sx={sx}
         onClick={onClick}
+        onChange={onChange}
+        value={value}
+        onKeyUp={onKeyUp}
       />
 
       <style jsx global>

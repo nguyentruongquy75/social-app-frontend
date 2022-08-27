@@ -68,9 +68,7 @@ function Main() {
             <Grid item xs={12} sm={7}>
               <PostCreateOrganism />
 
-              <Stack className="post-list">
-                <PostCardOrganism />
-              </Stack>
+              <Stack className="post-list">{/* <PostCardOrganism /> */}</Stack>
             </Grid>
           </Grid>
         </Box>

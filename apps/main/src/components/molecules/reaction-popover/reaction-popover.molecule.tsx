@@ -5,9 +5,20 @@ type Props = {
   isDisplay: boolean;
   anchorEl: any;
   close: () => void;
+  onSetReaction: (type: string) => void;
 };
 
-export function ReactionPopoverMolecule({ isDisplay, anchorEl, close }: Props) {
+export function ReactionPopoverMolecule({
+  isDisplay,
+  anchorEl,
+  close,
+  onSetReaction,
+}: Props) {
+  const chooseReaction = (type: string) => {
+    onSetReaction(type);
+    close();
+  };
+
   return (
     <>
       <Popover
@@ -21,13 +32,14 @@ export function ReactionPopoverMolecule({ isDisplay, anchorEl, close }: Props) {
       >
         <Stack direction="row" gap={1} className="reaction-popover">
           {REACTIONS.map((item) => (
-            <Tooltip title={item.label}>
+            <Tooltip title={item.label} key={item.type}>
               <Box
                 component="img"
                 src={item.icon}
                 key={item.label}
                 sx={{ width: 39 }}
                 className="reaction-image"
+                onClick={() => chooseReaction(item.type)}
               />
             </Tooltip>
           ))}

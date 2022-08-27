@@ -4,6 +4,7 @@ import {
   DEFAULT_IMAGE_SIZE,
   DEFAULT_SUBTITLE_FONT_SIZE,
 } from 'apps/main/src/constants';
+import { isValidElement } from 'react';
 import { Link } from 'react-router-dom';
 
 type Props = {
@@ -70,7 +71,7 @@ export function CommonItemAtom({
               sx={{ width: imageDecoratorSize, height: imageDecoratorSize }}
             />
           )}
-          {imageDecorator && (
+          {isValidElement(imageDecorator) && (
             <Box
               className="common-item-image-decorator"
               sx={{ width: imageDecoratorSize, height: imageDecoratorSize }}
@@ -84,7 +85,7 @@ export function CommonItemAtom({
             <Typography
               variant="subtitle1"
               className={hoverUnderline ? 'hover-underline' : ''}
-              sx={{ fontWeight: 500, ...styleTypograpy }}
+              sx={{ fontWeight: 500, lineHeight: 1.1, ...styleTypograpy }}
             >
               {title}
             </Typography>

@@ -1,6 +1,7 @@
+import { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { meApi } from '../api/auth/me';
-import { AUTH_ENPOINT } from '../constants';
+import { AUTH_ENPOINT, EVENTS } from '../constants';
 
 export async function useUser() {
   const navigate = useNavigate();
@@ -8,16 +9,28 @@ export async function useUser() {
   const savedToken = localStorage.getItem('token');
 
   const navigateToLogin = () =>
-    navigate(AUTH_ENPOINT.BASE + AUTH_ENPOINT.LOGIN);
+    navigate(AUTH_ENPOINT.BASE + AUTH_ENPOINT.LOGIN, { replace: true });
 
   if (!savedToken) {
+    console.log('navigate');
     navigateToLogin();
     return;
   }
 
-  const user = await meApi();
+  useEffect(() => {
+    const getUser = async () => {
+      const user = await meApi();
 
-  user && navigateToLogin();
+      if (!user) {
+        navigateToLogin();
+        return;
+      }
 
-  return user;
+      return user;
+    };
+
+    getUser();
+  }, []);
+
+  return;
 }

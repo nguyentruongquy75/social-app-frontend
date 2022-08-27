@@ -1,5 +1,6 @@
 import { IconButton, Tooltip } from '@mui/material';
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
 
 type Props = {
   children: JSX.Element | string;
@@ -7,10 +8,18 @@ type Props = {
   sx?: any;
   onClick?: any;
   className?: string;
+  to?: string;
 };
 
 export const IconButtonAtom = React.forwardRef(
-  ({ children, tooltip, sx = {}, onClick, className }: Props, ref: any) => {
+  ({ children, tooltip, sx = {}, onClick, className, to }: Props, ref: any) => {
+    const navigate = useNavigate();
+
+    const onClickHandler = (e: any) => {
+      to && navigate(to);
+      onClick && onClick(e);
+    };
+
     return (
       <Tooltip title={tooltip ? tooltip : ''}>
         <IconButton
@@ -20,7 +29,7 @@ export const IconButtonAtom = React.forwardRef(
             color: '#050505',
           }}
           className={className}
-          onClick={onClick}
+          onClick={onClickHandler}
           ref={ref}
         >
           {children}

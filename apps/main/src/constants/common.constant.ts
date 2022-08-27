@@ -72,3 +72,18 @@ export const USER_STATUS = [
   },
 ];
 export const RECOIL_KEY = 'ishare-key';
+
+export const POST_DIALOG_TYPE = {
+  CREATE: 'CREATE',
+  UPDATE: 'UPDATE',
+};
+
+export const NOTIFICATION_TYPE = {
+  REACTION: 'Reaction',
+  COMMENT: 'Comment',
+};
+
+export const CHATROOM_TYPE = {
+  GROUP: 'Group',
+  DEFAULT: 'Default',
+};

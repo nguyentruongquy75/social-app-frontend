@@ -48,3 +48,9 @@ export const COMMENT_ENDPOINT = {
   UPDATE: '/update',
   DELETE: '/delete',
 };
+
+export const INVITATION_ENDPOINT = {
+  BASE: 'invitations',
+  ACCEPT: '/accept',
+  DECLINE: '/decline',
+};

@@ -5,7 +5,7 @@ import {
   DEFAULT_SUBTITLE_FONT_SIZE,
 } from 'apps/main/src/constants';
 import { isValidElement } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 
 type Props = {
   image?: string;
@@ -23,6 +23,8 @@ type Props = {
   main?: JSX.Element;
   className?: string;
   dot?: boolean;
+  imageLink?: string;
+  titleLink?: string;
 };
 
 export function CommonItemAtom({
@@ -41,7 +43,10 @@ export function CommonItemAtom({
   main,
   className,
   dot,
+  imageLink,
+  titleLink,
 }: Props) {
+  const navigate = useNavigate();
   const imageStyle: any = {
     width: imageSize ?? DEFAULT_IMAGE_SIZE,
     height: imageSize ?? DEFAULT_IMAGE_SIZE,
@@ -49,6 +54,8 @@ export function CommonItemAtom({
   };
 
   if (roundedImage) imageStyle.borderRadius = '50%';
+
+  const imageNavigate = () => imageLink && navigate(imageLink);
 
   return (
     <>
@@ -62,7 +69,12 @@ export function CommonItemAtom({
         className={className}
       >
         <Box className="common-item-image-container">
-          <Box component="img" src={image} sx={imageStyle} />
+          <Box
+            component="img"
+            src={image}
+            sx={imageStyle}
+            onClick={imageNavigate}
+          />
           {typeof imageDecorator == 'string' && (
             <Box
               component="img"
@@ -83,9 +95,11 @@ export function CommonItemAtom({
         {!main && (
           <Stack>
             <Typography
+              component={Link}
               variant="subtitle1"
               className={hoverUnderline ? 'hover-underline' : ''}
               sx={{ fontWeight: 500, lineHeight: 1.1, ...styleTypograpy }}
+              to={titleLink ? titleLink : '#'}
             >
               {title}
             </Typography>

@@ -11,3 +11,4 @@ export * from './chat-popover/chat-popover.molecule';
 export * from './chat-room-popover/chat-room-popover.molecule';
 export * from './profile-bio/profile-bio.molecule';
 export * from './post-create-dialog/post-create-dialog.molecule';
+export * from './friend-item/friend-item.molecule';

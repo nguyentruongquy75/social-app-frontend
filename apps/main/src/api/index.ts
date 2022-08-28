@@ -14,3 +14,6 @@ export * from './notification/read';
 export * from './search/get';
 export * from './chat/get';
 export * from './chat/sendMessage';
+export * from './invitation/accept';
+export * from './invitation/decline';
+export * from './friend/delete';

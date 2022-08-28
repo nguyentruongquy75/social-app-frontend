@@ -3,7 +3,7 @@ import { Route, Router, Routes } from 'react-router-dom';
 import { BaseLayout } from '../components/templates/layout/base.layout';
 import { HomePage } from '../pages';
 import { AuthPage } from '../pages/AuthPage';
-import { FriendPage } from '../pages/FriendPage';
+import { FriendPage, FRIEND_PAGE_TYPE } from '../pages/FriendPage';
 import { ProfilePage } from '../pages/ProfilePage';
 
 import 'react-toastify/dist/ReactToastify.css';
@@ -28,7 +28,14 @@ export function App() {
         <Route path="/auth/:type" element={<AuthPage />} />
 
         <Route path="/profile" element={<ProfilePage />} />
-        <Route path="/friends" element={<FriendPage />} />
+        <Route
+          path="/friends"
+          element={<FriendPage type={FRIEND_PAGE_TYPE.FRIEND} />}
+        />
+        <Route
+          path="/friends/invitations"
+          element={<FriendPage type={FRIEND_PAGE_TYPE.INVITATION} />}
+        />
 
         <Route path="/" element={<HomePage />} />
       </Routes>
@@ -40,6 +47,10 @@ export function App() {
           body {
             margin: 0;
             background-color: #f0f2f5;
+          }
+          a {
+            color: inherit;
+            text-decoration: none;
           }
         `}
       </style>

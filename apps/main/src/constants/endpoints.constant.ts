@@ -14,6 +14,8 @@ export const USER_ENDPOINT = {
   FRIENDS: '/friends',
   CONTACTS: '/contacts',
   SEARCH: '/search',
+  UPDATE: '/update',
+  POST: '/posts',
 };
 
 export const CHAT_ENDPOINT = {

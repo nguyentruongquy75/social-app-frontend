@@ -1,4 +1,11 @@
-import { Box, IconButton, Menu, MenuItem, Popper } from '@mui/material';
+import {
+  Box,
+  IconButton,
+  Menu,
+  MenuItem,
+  Popper,
+  Typography,
+} from '@mui/material';
 import { CommonItemAtom } from '../../atoms';
 
 import Avatar from 'apps/main/src/assets/images/default-avatar.png';
@@ -70,7 +77,11 @@ export function FriendItemMolecule({ id, fullName, avatarImage }: Props) {
         open={isDisplayDeleteFriendDialog}
         onClose={hideDeleteFriendDialog}
         title={`Hủy kết bạn với ${fullName}`}
-        content={`Bạn có chắc chắn muốn hủy kết bạn với ${fullName} không?`}
+        content={
+          <Typography>
+            Bạn có chắc chắn muốn hủy kết bạn với {fullName} không?
+          </Typography>
+        }
         onCancel={hideDeleteFriendDialog}
         onOk={onOk}
       />
@@ -80,6 +91,7 @@ export function FriendItemMolecule({ id, fullName, avatarImage }: Props) {
           .friend-item-container {
             border-radius: 8px;
             border: 1px solid #ddd;
+            background: white;
           }
         `}
       </style>

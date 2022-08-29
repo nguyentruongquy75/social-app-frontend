@@ -17,3 +17,5 @@ export * from './chat/sendMessage';
 export * from './invitation/accept';
 export * from './invitation/decline';
 export * from './friend/delete';
+export * from './user/change-bio';
+export * from './user/change-image';

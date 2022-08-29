@@ -12,10 +12,14 @@ import { CHAT_ENDPOINT, NOTIFICATION_ENDPOINT } from 'apps/main/src/constants';
 import { fetcher } from 'apps/main/src/api/fetcher';
 
 import red from '@mui/material/colors/red';
+import { useRecoilState } from 'recoil';
+import { userState } from 'apps/main/src/stores';
 
 type Props = {};
 
 export function Header({}: Props) {
+  const [user] = useRecoilState(userState);
+
   const {
     isDisplay: isDisplayNotificationPopover,
     open: displayNotificationPopover,
@@ -80,8 +84,8 @@ export function Header({}: Props) {
                 <IconButtonAtom sx={{ p: 0 }} tooltip="Tài khoản">
                   <Box
                     component="img"
-                    src={Avatar}
-                    sx={{ borderRadius: '50%' }}
+                    src={user?.avatarImage ?? Avatar}
+                    sx={{ borderRadius: '50%', width: 40, height: 40 }}
                   />
                 </IconButtonAtom>
               </Stack>

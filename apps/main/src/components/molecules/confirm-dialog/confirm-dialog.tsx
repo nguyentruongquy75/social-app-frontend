@@ -9,11 +9,13 @@ import {
 
 type Props = {
   title: string;
-  content: string;
+  content: string | JSX.Element;
   onCancel: () => void;
   onOk: () => void;
   open: boolean;
   onClose: () => void;
+  cancelText?: string;
+  okText?: string;
 };
 
 export function ConfirmDialogMolecule({
@@ -23,16 +25,16 @@ export function ConfirmDialogMolecule({
   onClose,
   onCancel,
   onOk,
+  cancelText = 'Hủy',
+  okText = 'Xác nhận',
 }: Props) {
   return (
-    <Dialog open={open} onClose={onClose}>
+    <Dialog open={open} onClose={onClose} maxWidth="sm" fullWidth>
       <DialogTitle textAlign="center">{title} </DialogTitle>
-      <DialogContent dividers>
-        <Typography>{content}</Typography>
-      </DialogContent>
+      <DialogContent dividers>{content}</DialogContent>
       <DialogActions>
-        <Button onClick={onCancel}>Hủy</Button>
-        <Button onClick={onOk}>Xác nhận</Button>
+        <Button onClick={onCancel}>{cancelText}</Button>
+        <Button onClick={onOk}>{okText}</Button>
       </DialogActions>
     </Dialog>
   );

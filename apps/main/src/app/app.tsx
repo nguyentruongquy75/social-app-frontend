@@ -28,6 +28,7 @@ export function App() {
         <Route path="/auth/:type" element={<AuthPage />} />
 
         <Route path="/profile" element={<ProfilePage />} />
+        <Route path="/profile/:id" element={<ProfilePage />} />
         <Route
           path="/friends"
           element={<FriendPage type={FRIEND_PAGE_TYPE.FRIEND} />}

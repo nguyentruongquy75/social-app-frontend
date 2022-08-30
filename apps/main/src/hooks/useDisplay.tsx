@@ -1,7 +1,7 @@
 import { useState } from 'react';
 
-export function useDisplay() {
-  const [isDisplay, setIsDisplay] = useState(false);
+export function useDisplay(initialDisplay = false) {
+  const [isDisplay, setIsDisplay] = useState(initialDisplay);
 
   const open = () => setIsDisplay(true);
 

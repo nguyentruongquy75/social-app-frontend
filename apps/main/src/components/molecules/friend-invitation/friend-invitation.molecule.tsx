@@ -7,8 +7,10 @@ import {
   Stack,
   Typography,
 } from '@mui/material';
+import { acceptInvitationApi, declineInvitationApi } from 'apps/main/src/api';
 
-import Avatar from 'apps/main/src/assets/images/default-avatar.png';
+import Avatar from 'apps/main/src/assets/images/large-avatar.png';
+import { useState } from 'react';
 import { ButtonAtom } from '../../atoms/button/buttom.atom';
 import { CommonItemAtom } from '../../atoms/common-item/common-item.atom';
 
@@ -19,32 +21,72 @@ export enum FriendInvitationType {
 
 type Props = {
   type: FriendInvitationType;
+  sender: any;
+  id: number;
 };
 
-export function FriendInvitationMolecule({ type }: Props) {
+const INVITATION_STATUS = {
+  PENDING: 'Pending',
+  ACCEPTED: 'Accepted',
+  DECLINED: 'Declined',
+};
+
+export function FriendInvitationMolecule({ type, sender, id }: Props) {
   let card;
+
+  const [status, setStatus] = useState(INVITATION_STATUS.PENDING);
+
+  const acceptInvitation = async (id: number) => {
+    setStatus(INVITATION_STATUS.ACCEPTED);
+    await acceptInvitationApi(id);
+  };
+
+  const declineInvitation = async (id: number) => {
+    setStatus(INVITATION_STATUS.DECLINED);
+    await declineInvitationApi(id);
+  };
 
   if (type === FriendInvitationType.VERTICAL)
     card = (
       <Card>
         <CardMedia
           component="img"
-          src={
-            'https://scontent.fsgn5-2.fna.fbcdn.net/v/t39.30808-1/287063600_176445761432468_7193977483603521073_n.jpg?stp=dst-jpg_p240x240&_nc_cat=105&ccb=1-7&_nc_sid=7206a8&_nc_ohc=uGNbgtrhWBcAX_Gl1AF&_nc_ht=scontent.fsgn5-2.fna&oh=00_AT9Xvwh3SSsOuJPlLXDwfMFFa-dMLgxh-EyXml0zlihqfg&oe=6305443C'
-          }
+          src={sender.avatarImage ?? Avatar}
           style={{
             aspectRatio: '1',
           }}
         />
 
         <CardContent>
-          <Typography className="invitation__name">Phước Hiếu</Typography>
+          <Typography className="invitation__name">
+            {sender.fullName}
+          </Typography>
 
           <Stack gap={1}>
-            <ButtonAtom fullWidth className="invitation__accept-button">
-              Xác nhận
-            </ButtonAtom>
-            <ButtonAtom fullWidth>Huỷ</ButtonAtom>
+            {status !== INVITATION_STATUS.DECLINED && (
+              <ButtonAtom
+                fullWidth
+                className="invitation__accept-button"
+                disabled={status === INVITATION_STATUS.ACCEPTED}
+                onClick={() => acceptInvitation(id)}
+              >
+                {status === INVITATION_STATUS.ACCEPTED
+                  ? 'Đã chấp nhận lời mời kết bạn'
+                  : 'Xác nhận'}
+              </ButtonAtom>
+            )}
+
+            {status !== INVITATION_STATUS.ACCEPTED && (
+              <ButtonAtom
+                fullWidth
+                disabled={status === INVITATION_STATUS.DECLINED}
+                onClick={() => declineInvitation(id)}
+              >
+                {status === INVITATION_STATUS.DECLINED
+                  ? 'Đã xoá yêu cầu'
+                  : 'Huỷ'}
+              </ButtonAtom>
+            )}
           </Stack>
         </CardContent>
       </Card>
@@ -60,7 +102,7 @@ export function FriendInvitationMolecule({ type }: Props) {
           <Box sx={{ flex: 1 }}>
             <Stack direction="row" justifyContent="space-between" pb={1}>
               <Typography className="invitation__name">
-                Huỳnh Thiên An
+                {sender.fullName}
               </Typography>
               <Typography className="invitation__time">3 năm</Typography>
             </Stack>

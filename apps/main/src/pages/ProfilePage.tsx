@@ -3,12 +3,18 @@ import { Edit } from '@mui/icons-material';
 import { ContainerAtom, ButtonAtom } from '../components/atoms';
 import { BaseLayout } from '../components/templates/layout/base.layout';
 
-import Avatar from 'apps/main/src/assets/images/default-avatar.png';
+import Avatar from 'apps/main/src/assets/images/large-avatar.png';
 import { PostCreateOrganism } from '../components/organisms/post-create/post-create.organism';
 import { PostCardOrganism } from '../components/organisms';
 import { ProfileBioMolecule } from '../components/molecules';
 import { useDisplay } from '../hooks';
 import { EditProfileMolecule } from '../components/molecules/edit-profile-dialog/edit-profile-dialog.molecule';
+import { useParams } from 'react-router-dom';
+import useSWR from 'swr';
+import { USER_ENDPOINT } from '../constants';
+import { fetcher } from '../api/fetcher';
+import { useRecoilState } from 'recoil';
+import { userState } from '../stores';
 
 export function ProfilePage() {
   return (
@@ -25,6 +31,20 @@ function Main() {
     close: hideEditProfile,
   } = useDisplay();
 
+  const { id } = useParams();
+
+  const [localUser, _] = useRecoilState(userState);
+
+  const { data: user } = useSWR(
+    USER_ENDPOINT.BASE + USER_ENDPOINT.SEARCH + `/${id ? id : localUser.id}`,
+    (url) => fetcher(url)
+  );
+
+  const { data: posts } = useSWR(
+    USER_ENDPOINT.BASE + USER_ENDPOINT.POST,
+    (url) => fetcher(url)
+  );
+
   return (
     <>
       <ContainerAtom
@@ -39,20 +59,26 @@ function Main() {
           <Box className="cover-image" />
           <Box p={2}>
             <Stack direction={{ sm: 'row' }} alignItems="center" gap={2}>
-              <Box component="img" src={Avatar} className="avatar-image" />
-              <Typography className="user-name">Nguyen Truong Quy</Typography>
-              <ButtonAtom
-                sx={{
-                  ml: {
-                    xs: 0,
-                    sm: 'auto',
-                  },
-                }}
-                onClick={displayEditProfile}
-              >
-                <Edit />
-                <Typography>Chỉnh sửa trang cá nhân</Typography>
-              </ButtonAtom>
+              <Box
+                component="img"
+                src={user?.avatarImage ?? Avatar}
+                className="avatar-image"
+              />
+              <Typography className="user-name">{user?.fullName}</Typography>
+              {user?.id === localUser.id && (
+                <ButtonAtom
+                  sx={{
+                    ml: {
+                      xs: 0,
+                      sm: 'auto',
+                    },
+                  }}
+                  onClick={displayEditProfile}
+                >
+                  <Edit />
+                  <Typography>Chỉnh sửa trang cá nhân</Typography>
+                </ButtonAtom>
+              )}
             </Stack>
           </Box>
         </Box>
@@ -62,14 +88,22 @@ function Main() {
             <Grid item xs={12} sm={5}>
               <Box className="profile__left">
                 <Typography className="profile__title">Giới thiệu</Typography>
-                <ProfileBioMolecule />
+                <ProfileBioMolecule content={user?.bio} />
               </Box>
             </Grid>
             <Grid item xs={12} sm={7}>
-              <PostCreateOrganism />
+              {user?.id === localUser.id && <PostCreateOrganism />}
 
               <Stack className="post-list">
-                <PostCardOrganism />
+                {posts?.items.map((post: any) => (
+                  <PostCardOrganism {...post} key={post.id} />
+                ))}
+
+                {posts?.items.length === 0 && (
+                  <Typography textAlign="center" py={1} color="text.secondary">
+                    Chưa có bài viết nào
+                  </Typography>
+                )}
               </Stack>
             </Grid>
           </Grid>
@@ -79,6 +113,9 @@ function Main() {
       <EditProfileMolecule
         open={isDisplayEditProfile}
         onClose={hideEditProfile}
+        avatarImage={user?.avatarImage}
+        coverImage={user?.coverImage}
+        bio={user?.bio}
       />
 
       <style jsx global>
@@ -94,7 +131,12 @@ function Main() {
 
           .cover-image {
             padding-top: 37.5%;
-            background: #f0f2f5;
+            background: ${user?.coverImage
+              ? `url(${user?.coverImage})`
+              : '#f0f2f5'};
+            background-repeat: no-repeat;
+            background-position: center;
+            background-size: cover;
           }
 
           .avatar-image {

@@ -7,36 +7,91 @@ import {
   Stack,
   Typography,
 } from '@mui/material';
+import PubSub from 'pubsub-js';
+
 import { CommonItemAtom, IconButtonAtom, InputAtom } from '../../atoms';
 
 import Avatar from 'apps/main/src/assets/images/default-avatar.png';
 import { Call, Close, Send, VideoCall } from '@mui/icons-material';
+import useSWR from 'swr';
+import { fetcher } from 'apps/main/src/api/fetcher';
+import { handleTimeString } from 'apps/main/src/utils/time';
+import { ChangeEvent, KeyboardEvent, useEffect, useRef, useState } from 'react';
+import { sendMessageApi } from 'apps/main/src/api';
+import { useRecoilState } from 'recoil';
+import { userState } from 'apps/main/src/stores';
+import { seenMessageApi } from 'apps/main/src/api/chat/seen';
+import { useDisplay, useIntersectionObserver } from 'apps/main/src/hooks';
+import { EVENTS } from 'apps/main/src/constants';
+import { RoomTypes } from '../chat-popover/chat-popover.molecule';
 
 type Props = {
-  open: boolean;
-  onClose: () => void;
+  roomId: number;
+  removeRoom: (id: number) => void;
 };
 
-function MessageItem() {
+type MessageProps = {
+  content: string;
+  createdAt: string;
+  id: number;
+  reaction: any[];
+  seen: any[];
+  seenUserId: number;
+  updatedAt: string;
+  userId: number;
+  isDisplaySeen: boolean;
+};
+
+const DEFAULT_PAGE = 2;
+const DEFAULT_SIZE = 10;
+
+let page = DEFAULT_PAGE;
+
+let size = 0;
+
+let lastScroll: number = 0;
+
+function MessageItem({ content, userId, isDisplaySeen = false }: MessageProps) {
+  const [user, _] = useRecoilState(userState);
+  const isAuthor = user.id === userId;
+
   return (
     <>
-      <Grid container className="message" spacing={1}>
-        <Grid item>
-          <Box component="img" src={Avatar} className="message-avatar" />
-        </Grid>
+      <Grid
+        container
+        className={`message ${isAuthor ? 'author' : ''}`}
+        spacing={1}
+      >
+        {!isAuthor && (
+          <>
+            <Grid item>
+              <Box component="img" src={Avatar} className="message-avatar" />
+            </Grid>
 
-        <Grid item flex={1}>
-          <Box className="message-content">
-            <Typography className="message-text">Hello</Typography>
-          </Box>
-        </Grid>
+            <Grid item flex={1}>
+              <Box className="message-content">
+                <Typography className="message-text">{content}</Typography>
+              </Box>
+            </Grid>
+          </>
+        )}
+
+        {isAuthor && (
+          <Grid item flex={1} textAlign="right">
+            <Box className="message-content">
+              <Typography className="message-text">{content}</Typography>
+            </Box>
+          </Grid>
+        )}
 
         <Grid item xs={1}>
-          <Box
-            component="img"
-            src={Avatar}
-            className="message-avatar message-avatar-seen"
-          />
+          {isDisplaySeen && (
+            <Box
+              component="img"
+              src={Avatar}
+              className="message-avatar message-avatar-seen"
+            />
+          )}
         </Grid>
       </Grid>
 
@@ -44,6 +99,11 @@ function MessageItem() {
         {`
           .message {
             align-items: flex-end;
+          }
+
+          .message.author .message-content {
+            background-color: #0084ff;
+            color: white;
           }
 
           .message-avatar {
@@ -57,6 +117,8 @@ function MessageItem() {
             padding: 8px 12px;
             border-radius: 18px;
             display: inline-block;
+            max-width: 200px;
+            text-align: left;
           }
 
           .message-text {
@@ -73,10 +135,126 @@ function MessageItem() {
   );
 }
 
-export function ChatRoomPopoverMolecule({ open, onClose }: Props) {
+export function ChatRoomPopoverMolecule({ roomId, removeRoom }: Props) {
+  const { isDisplay, open, close } = useDisplay(true);
+  const loadMoreRef = useRef<HTMLDivElement | null>(null);
+  const messageListRef = useRef<HTMLDivElement | null>(null);
+
+  const entry = useIntersectionObserver(loadMoreRef, {});
+
+  let isLoadMore = !!entry?.isIntersecting;
+
+  const { data: room } = useSWR(
+    isDisplay ? `chat/${roomId}/messages?size=10` : null,
+    (url) => fetcher(url)
+  );
+
+  const { data: loadMore } = useSWR(
+    `chat/${roomId}/messages?page=${page}&size=${size}`,
+    (url) => fetcher(url)
+  );
+
+  const [user, _] = useRecoilState(userState);
+
+  const [messageContent, setMessageContent] = useState('');
+
+  const roomActive = room?.room.active;
+
+  const bottomRef = useRef<HTMLDivElement | null>(null);
+
+  const lastSeenId = room?.items
+    .slice()
+    .reverse()
+    .find((message: any) => {
+      return message.seen.some((seenUser: any) => seenUser.id !== user.id);
+    })?.id;
+
+  const getActiveText = (active: string, lastActive: string) => {
+    if (active) return 'Đang hoạt động';
+
+    if (!lastActive) return '';
+
+    const duration = handleTimeString(lastActive);
+
+    return `Hoạt động ${duration} trước`;
+  };
+
+  const clearMessageContent = () => setMessageContent('');
+
+  const messageContentChangeHandler = (e: ChangeEvent<HTMLInputElement>) =>
+    setMessageContent(e.target.value);
+
+  const sendMessage = async () => {
+    clearMessageContent();
+    await sendMessageApi({
+      content: messageContent,
+      chatRoomId: roomId,
+      userId: user.id,
+    });
+  };
+
+  const onKeyUp = (e: KeyboardEvent<HTMLInputElement>) => {
+    if (e.which === 13 && !e.shiftKey) {
+      messageContent.trim() && sendMessage();
+    }
+  };
+
+  const clickSendHandler = () => {
+    if (messageContent.trim()) sendMessage();
+  };
+
+  const closeChatRoom = () => {
+    close();
+    removeRoom(roomId);
+  };
+
+  const voiceChat = () =>
+    PubSub.publish(EVENTS.RTC_CALL_ADD_ROOM, {
+      id: roomId,
+      type: RoomTypes.VOICE_CHAT,
+      userId: user.id,
+    });
+
+  const videoCall = () =>
+    PubSub.publish(EVENTS.RTC_CALL_ADD_ROOM, {
+      id: roomId,
+      type: RoomTypes.VIDEO_CALL,
+      userId: user.id,
+    });
+
+  useEffect(() => {
+    const seenMessages = async () => await seenMessageApi(roomId);
+
+    if (isDisplay) seenMessages();
+  }, [room]);
+
+  useEffect(() => {
+    if (isDisplay) {
+      bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
+    }
+  }, [isDisplay, bottomRef.current, room?.items.length]);
+
+  useEffect(() => {
+    const node = messageListRef.current;
+    const newScrollHeight = node?.scrollHeight ?? 0;
+
+    if (newScrollHeight - lastScroll > 0 && node)
+      node.scrollTop = newScrollHeight - lastScroll;
+
+    lastScroll = newScrollHeight;
+  }, [loadMore?.items.length]);
+
+  useEffect(() => {
+    if (size > 0 && loadMore?.items.length !== loadMore?.totalPages) return;
+
+    if (isLoadMore) {
+      size += DEFAULT_SIZE;
+    }
+  }, [isLoadMore]);
+
   return (
     <>
-      {open && (
+      {isDisplay && (
         <Box className="chatroom-container">
           <Stack
             direction="row"
@@ -89,41 +267,63 @@ export function ChatRoomPopoverMolecule({ open, onClose }: Props) {
               image={Avatar}
               roundedImage
               imageSize={32}
-              title="Bụt hiện lên và nói"
-              subtitle="Đang hoạt động"
-              imageDecorator={<Box className="dot-active dot-user-active" />}
+              title={room?.room.name}
+              subtitle={getActiveText(room?.room.active, room?.room.lastActive)}
+              imageDecorator={
+                roomActive && <Box className="dot-active dot-user-active" />
+              }
               imageDecoratorSize={14}
             />
 
             <Stack direction="row" alignItems="center" gap={0.5}>
-              <IconButton className="chat-action-button">
+              <IconButton className="chat-action-button" onClick={voiceChat}>
                 <Call className="chat-action-icon" color="primary" />
               </IconButton>
 
-              <IconButton className="chat-action-button">
+              <IconButton className="chat-action-button" onClick={videoCall}>
                 <VideoCall className="chat-action-icon" color="primary" />
               </IconButton>
 
-              <IconButton className="chat-action-button" onClick={onClose}>
+              <IconButton
+                className="chat-action-button"
+                onClick={closeChatRoom}
+              >
                 <Close className="chat-action-icon" color="primary" />
               </IconButton>
             </Stack>
           </Stack>
 
-          <Stack gap={1} className="message-list">
-            <MessageItem />
-            <MessageItem />
-            <MessageItem />
-            <MessageItem />
-            <MessageItem />
-            <MessageItem />
-            <MessageItem />
-            <MessageItem />
+          <Stack gap={1} className="message-list" ref={messageListRef}>
+            {room && <div id="load-more" ref={loadMoreRef}></div>}
+
+            {size >= DEFAULT_SIZE &&
+              loadMore?.items.map((message: any) => (
+                <MessageItem
+                  {...message}
+                  isDisplaySeen={lastSeenId === message.id}
+                  key={message.id}
+                />
+              ))}
+
+            {room?.items.map((message: any) => (
+              <MessageItem
+                {...message}
+                isDisplaySeen={lastSeenId === message.id}
+                key={message.id}
+              />
+            ))}
+
+            <div ref={bottomRef}></div>
           </Stack>
 
           <Stack direction="row" p={0.5} className="chat-bottom">
-            <InputAtom placeholder="Aa" />
-            <IconButton>
+            <InputAtom
+              placeholder="Aa"
+              onChange={messageContentChangeHandler}
+              onKeyUp={onKeyUp}
+              value={messageContent}
+            />
+            <IconButton onClick={clickSendHandler}>
               <Send color="primary" />
             </IconButton>
           </Stack>
@@ -161,8 +361,8 @@ export function ChatRoomPopoverMolecule({ open, onClose }: Props) {
           }
 
           .dot-user-active {
-            width: 14px;
-            height: 14px;
+            width: 14px !important;
+            height: 14px !important;
             background-color: #31a24c;
           }
 

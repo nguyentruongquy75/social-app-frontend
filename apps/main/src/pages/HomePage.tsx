@@ -1,25 +1,53 @@
-import { Box, List, ListItem, ListItemButton } from '@mui/material';
+import {
+  Box,
+  List,
+  ListItem,
+  ListItemButton,
+  Stack,
+  Typography,
+} from '@mui/material';
+import PubSub from 'pubsub-js';
+
 import { CommonItemAtom, TitleAtom } from '../components/atoms';
 import { BaseLayout } from '../components/templates/layout/base.layout';
 
 import FriendIcon from 'apps/main/src/assets/images/friendIcon.png';
 import Avatar from 'apps/main/src/assets/images/default-avatar.png';
 import { PostCardOrganism } from '../components/organisms/post-card/post-card.organism';
+import { useNavigate } from 'react-router-dom';
+import { useUser } from '../hooks';
+import { PostCreateOrganism } from '../components/organisms';
+import useSWR from 'swr';
+import { EVENTS, USER_ENDPOINT } from '../constants';
+import { fetcher } from '../api/fetcher';
+import { useRecoilState } from 'recoil';
+import { userState } from '../stores';
+import { ProtectRoute } from '../app/ProtectRoute';
 
 type Props = {};
 
 export function HomePage({}: Props) {
   return (
-    <BaseLayout column={3} left={<Left />} right={<Right />} main={<Main />} />
+    <ProtectRoute>
+      <BaseLayout
+        column={3}
+        left={<Left />}
+        right={<Right />}
+        main={<Main />}
+      />
+    </ProtectRoute>
   );
 }
 
 function Left() {
+  const [user, _] = useRecoilState(userState);
+  const navigate = useNavigate();
   const schema = [
     {
       link: 'profile',
-      image: Avatar,
-      title: 'Nguyễn Trường Quý',
+      image: user.avatarImage ?? Avatar,
+      title: user.fullName,
+      roundImage: true,
     },
     {
       link: 'friends',
@@ -28,19 +56,21 @@ function Left() {
     },
   ];
 
+  const redirectTo = (link: string) => navigate(link);
+
   return (
-    <List
-      sx={{
-        marginLeft: '-32px',
-      }}
-    >
+    <List>
       {schema.map((item) => (
-        <ListItem key={item.link} sx={{ py: 0 }}>
+        <ListItem
+          onClick={() => redirectTo(item.link)}
+          key={item.link}
+          sx={{ py: 0 }}
+        >
           <ListItemButton>
             <CommonItemAtom
               title={item.title}
               image={item.image}
-              link={item.link}
+              roundedImage={item.roundImage}
             />
           </ListItemButton>
         </ListItem>
@@ -50,23 +80,15 @@ function Left() {
 }
 
 function Right() {
-  const schema = [
-    {
-      link: '',
-      image: Avatar,
-      title: 'Nguyễn Trường Quý',
-    },
-    {
-      link: '',
-      image: Avatar,
-      title: 'Nguyễn Trường Quý',
-    },
-    {
-      link: '',
-      image: Avatar,
-      title: 'Nguyễn Trường Quý',
-    },
-  ];
+  const [user, _] = useRecoilState(userState);
+  const { data: contacts } = useSWR(
+    USER_ENDPOINT.BASE + USER_ENDPOINT.CONTACTS,
+    (url) => fetcher(url)
+  );
+
+  const addRoom = (participants: number[]) => {
+    PubSub.publish(EVENTS.ADD_ROOM, participants);
+  };
 
   return (
     <Box pt={2}>
@@ -78,13 +100,16 @@ function Right() {
         Người liên hệ
       </TitleAtom>
       <List>
-        {schema.map((item) => (
+        {contacts?.items.map((item: any) => (
           <ListItem key={item.link} sx={{ py: 0 }}>
-            <ListItemButton>
+            <ListItemButton onClick={() => addRoom([user.id, item.id])}>
               <CommonItemAtom
-                title={item.title}
-                image={item.image}
-                link={item.link}
+                title={item.fullName}
+                image={item.avatarImage ?? Avatar}
+                imageDecorator={
+                  <Box className="dot-active" style={{ width: 7, height: 7 }} />
+                }
+                imageDecoratorSize={7}
                 roundedImage
               />
             </ListItemButton>
@@ -96,6 +121,11 @@ function Right() {
 }
 
 function Main() {
+  const { data: newsfeed } = useSWR(
+    USER_ENDPOINT.BASE + USER_ENDPOINT.NEWSFEED,
+    (url) => fetcher(url)
+  );
+
   return (
     <Box
       py={2}
@@ -105,7 +135,25 @@ function Main() {
         margin: '0 auto',
       }}
     >
-      <PostCardOrganism />
+      <PostCreateOrganism />
+      <Stack
+        gap={1}
+        mt={1}
+        px={{
+          xs: 1,
+          sm: 0,
+        }}
+      >
+        {newsfeed?.items.map((post: any) => (
+          <PostCardOrganism {...post} />
+        ))}
+
+        {newsfeed?.items.length === 0 && (
+          <Typography textAlign="center" color="gray">
+            Chưa có bài viết nào
+          </Typography>
+        )}
+      </Stack>
     </Box>
   );
 }

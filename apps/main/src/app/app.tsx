@@ -1,22 +1,20 @@
 import { ToastContainer } from 'react-toastify';
-import { Route, Router, Routes } from 'react-router-dom';
-import { BaseLayout } from '../components/templates/layout/base.layout';
+import { Route, Routes } from 'react-router-dom';
 import { HomePage } from '../pages';
 import { AuthPage } from '../pages/AuthPage';
 import { FriendPage, FRIEND_PAGE_TYPE } from '../pages/FriendPage';
 import { ProfilePage } from '../pages/ProfilePage';
 
 import 'react-toastify/dist/ReactToastify.css';
-import { io } from 'socket.io-client';
 import { useEffect } from 'react';
 import { EVENTS } from '../constants';
 import { useRecoilState } from 'recoil';
 import { userState } from '../stores';
-
-const socket = io('http://localhost:80');
+import { useSocket } from '../hooks';
 
 export function App() {
   const [user, _] = useRecoilState(userState);
+  const socket = useSocket();
 
   useEffect(() => {
     user && socket.emit(EVENTS.ONLINE, user.id);

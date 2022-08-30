@@ -79,7 +79,7 @@ export function PostCardOrganism({
           />
 
           {userStore.id === user.id && (
-            <MoreButtonMolecule onDelete={deletePost} />
+            <MoreButtonMolecule onDelete={deletePost} isDisplayEdit={false} />
           )}
         </Stack>
 

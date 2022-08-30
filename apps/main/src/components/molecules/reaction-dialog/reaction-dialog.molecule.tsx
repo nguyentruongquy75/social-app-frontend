@@ -94,7 +94,7 @@ export function ReactionDialog({ open, onClose, postId }: Props) {
         </Stack>
 
         <Stack className="reaction-list">
-          {groupedReactions[tabIndex].items.map((reaction) => (
+          {groupedReactions[tabIndex]?.items.map((reaction) => (
             <CommonItemAtom
               key={reaction.id}
               title={reaction.user.fullName}

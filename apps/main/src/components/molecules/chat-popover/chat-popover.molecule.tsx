@@ -18,7 +18,7 @@ import {
 } from '../../atoms';
 
 import Avatar from 'apps/main/src/assets/images/default-avatar.png';
-import { useDisplay } from 'apps/main/src/hooks';
+import { useDisplay, useSocket } from 'apps/main/src/hooks';
 import { ChatRoomPopoverMolecule } from '../chat-room-popover/chat-room-popover.molecule';
 import useSWR from 'swr';
 import { CHAT_ENDPOINT, EVENTS } from 'apps/main/src/constants';
@@ -29,12 +29,25 @@ import { getChatRoomApi, getUserSearchApi } from 'apps/main/src/api';
 import { useRecoilState } from 'recoil';
 import { userState } from 'apps/main/src/stores';
 import { handleTimeString } from 'apps/main/src/utils/time';
+import { ChatVoiceMolecule } from '../chat-voice-popover/chat-voice-popover.molecule';
 
 type Props = {
   anchorEl: HTMLElement | null;
   open: boolean;
   onClose: any;
   chatrooms: any;
+};
+
+export enum RoomTypes {
+  VOICE_CHAT = 'voice_chat',
+  VIDEO_CALL = 'video_call',
+  MESSAGE = 'message',
+}
+
+type DisplayedRoomType = {
+  id: number;
+  type: RoomTypes;
+  userId?: number;
 };
 
 export function ChatPopoverMolecule({
@@ -44,11 +57,14 @@ export function ChatPopoverMolecule({
   chatrooms,
 }: Props) {
   const [user, _] = useRecoilState(userState);
+  const socket = useSocket();
 
   const [isSearching, setIsSearching] = useState(false);
   const [searchText, setSearchText] = useState('');
   const [searchResult, setSearchResult] = useState<any>(null);
-  const [displayedChatrooms, setDisplayedChatrooms] = useState<number[]>([]);
+  const [displayedChatrooms, setDisplayedChatrooms] = useState<
+    DisplayedRoomType[]
+  >([]);
 
   const ChatContent = ({
     name,
@@ -78,20 +94,32 @@ export function ChatPopoverMolecule({
     setSearchText(e.target.value);
   };
 
-  const addRoom = (id: number) => {
-    if (displayedChatrooms.includes(id)) return;
+  const addRoom = (id: number, type = RoomTypes.MESSAGE, userId = null) => {
+    const existedRoom = displayedChatrooms.find(
+      (room) => room.id === id && room.type === type
+    );
+
+    if (existedRoom) return;
+
+    const room: any = {
+      id,
+      type,
+    };
+    if (userId) room.userId = userId;
 
     if (displayedChatrooms.length >= 2) {
-      setDisplayedChatrooms([...displayedChatrooms, id].slice(1));
+      setDisplayedChatrooms([...displayedChatrooms, room].slice(1));
       return;
     }
 
-    setDisplayedChatrooms([...displayedChatrooms, id]);
+    setDisplayedChatrooms([...displayedChatrooms, room]);
     return;
   };
 
-  const removeRoom = (id: number) => {
-    setDisplayedChatrooms(displayedChatrooms.filter((room) => room !== id));
+  const removeRoom = (id: number, type = RoomTypes.MESSAGE) => {
+    setDisplayedChatrooms(
+      displayedChatrooms.filter((room) => room.id !== id && room.type !== type)
+    );
   };
 
   const getChatRoom = async (participants: number[] | null, id?: number) => {
@@ -124,8 +152,28 @@ export function ChatPopoverMolecule({
       getChatRoom(participants);
     });
 
+    PubSub.subscribe(EVENTS.REMOVE_ROOM, (message, data) => {
+      removeRoom(data.id, data.type);
+    });
+
+    PubSub.subscribe(EVENTS.RTC_CALL_ADD_ROOM, (message, data) => {
+      addRoom(data.id, data.type, data.userId);
+    });
+
+    socket.on(user.id + EVENTS.VOICE_CHAT, ({ data }) =>
+      addRoom(data.roomId, RoomTypes.VOICE_CHAT, data.userId)
+    );
+
+    socket.on(user.id + EVENTS.VIDEO_CALL, ({ data }) =>
+      addRoom(data.roomId, RoomTypes.VIDEO_CALL, data.userId)
+    );
+
     return () => {
       PubSub.unsubscribe(EVENTS.ADD_ROOM);
+      PubSub.unsubscribe(EVENTS.RTC_CALL_ADD_ROOM);
+
+      socket.off(user.id + EVENTS.VIDEO_CALL);
+      socket.off(user.id + EVENTS.VOICE_CHAT);
     };
   }, []);
 
@@ -238,13 +286,24 @@ export function ChatPopoverMolecule({
       </CommonNotificationPopoverAtom>
 
       <Stack direction="row-reverse" className="list-chatroom">
-        {displayedChatrooms.map((room) => (
-          <ChatRoomPopoverMolecule
-            key={room}
-            roomId={room}
-            removeRoom={removeRoom}
-          />
-        ))}
+        {displayedChatrooms.map((room) => {
+          if (room.type === RoomTypes.MESSAGE)
+            return (
+              <ChatRoomPopoverMolecule
+                key={room.id}
+                roomId={room.id}
+                removeRoom={removeRoom}
+              />
+            );
+          return (
+            <ChatVoiceMolecule
+              type={room.type}
+              key={room.id}
+              roomId={room.id}
+              userCall={room.userId}
+            />
+          );
+        })}
       </Stack>
 
       <style jsx global>

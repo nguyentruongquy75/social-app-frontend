@@ -7,6 +7,8 @@ import {
   Stack,
   Typography,
 } from '@mui/material';
+import PubSub from 'pubsub-js';
+
 import { CommonItemAtom, IconButtonAtom, InputAtom } from '../../atoms';
 
 import Avatar from 'apps/main/src/assets/images/default-avatar.png';
@@ -20,6 +22,8 @@ import { useRecoilState } from 'recoil';
 import { userState } from 'apps/main/src/stores';
 import { seenMessageApi } from 'apps/main/src/api/chat/seen';
 import { useDisplay, useIntersectionObserver } from 'apps/main/src/hooks';
+import { EVENTS } from 'apps/main/src/constants';
+import { RoomTypes } from '../chat-popover/chat-popover.molecule';
 
 type Props = {
   roomId: number;
@@ -204,6 +208,20 @@ export function ChatRoomPopoverMolecule({ roomId, removeRoom }: Props) {
     removeRoom(roomId);
   };
 
+  const voiceChat = () =>
+    PubSub.publish(EVENTS.RTC_CALL_ADD_ROOM, {
+      id: roomId,
+      type: RoomTypes.VOICE_CHAT,
+      userId: user.id,
+    });
+
+  const videoCall = () =>
+    PubSub.publish(EVENTS.RTC_CALL_ADD_ROOM, {
+      id: roomId,
+      type: RoomTypes.VIDEO_CALL,
+      userId: user.id,
+    });
+
   useEffect(() => {
     const seenMessages = async () => await seenMessageApi(roomId);
 
@@ -258,11 +276,11 @@ export function ChatRoomPopoverMolecule({ roomId, removeRoom }: Props) {
             />
 
             <Stack direction="row" alignItems="center" gap={0.5}>
-              <IconButton className="chat-action-button">
+              <IconButton className="chat-action-button" onClick={voiceChat}>
                 <Call className="chat-action-icon" color="primary" />
               </IconButton>
 
-              <IconButton className="chat-action-button">
+              <IconButton className="chat-action-button" onClick={videoCall}>
                 <VideoCall className="chat-action-icon" color="primary" />
               </IconButton>
 

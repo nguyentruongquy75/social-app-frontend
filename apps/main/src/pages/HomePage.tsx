@@ -136,7 +136,14 @@ function Main() {
       }}
     >
       <PostCreateOrganism />
-      <Stack gap={1} mt={1}>
+      <Stack
+        gap={1}
+        mt={1}
+        px={{
+          xs: 1,
+          sm: 0,
+        }}
+      >
         {newsfeed?.items.map((post: any) => (
           <PostCardOrganism {...post} />
         ))}

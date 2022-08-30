@@ -5,3 +5,5 @@ export * from './useTab';
 export * from './useUser';
 export * from './useLoading';
 export * from './useIntersectionObserver';
+export * from './useSocket';
+export * from './useAudio';

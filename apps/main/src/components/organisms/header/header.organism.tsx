@@ -81,7 +81,7 @@ export function Header({}: Props) {
                   </IconButtonAtom>
                 </Badge>
 
-                <IconButtonAtom sx={{ p: 0 }} tooltip="Tài khoản">
+                <IconButtonAtom sx={{ p: 0 }} tooltip="Tài khoản" to="/profile">
                   <Box
                     component="img"
                     src={user?.avatarImage ?? Avatar}

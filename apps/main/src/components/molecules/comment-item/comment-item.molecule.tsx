@@ -342,6 +342,7 @@ export function CommentItemMolecule({
           .comment__content {
             font-size: 15px;
             word-break: break-word;
+            white-space: pre-line;
           }
 
           .comment__seemore {

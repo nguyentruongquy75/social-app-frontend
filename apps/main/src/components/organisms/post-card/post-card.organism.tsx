@@ -108,7 +108,7 @@ type PostContentProps = { content: string };
 function PostContent({ content }: PostContentProps) {
   return (
     <CardContent>
-      <Typography>{content}</Typography>
+      <Typography sx={{ whiteSpace: 'pre-line' }}>{content}</Typography>
     </CardContent>
   );
 }

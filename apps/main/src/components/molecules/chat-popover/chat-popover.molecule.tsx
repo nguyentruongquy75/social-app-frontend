@@ -25,7 +25,11 @@ import { CHAT_ENDPOINT, EVENTS } from 'apps/main/src/constants';
 import { fetcher } from 'apps/main/src/api/fetcher';
 import { ChangeEvent, useEffect, useState } from 'react';
 import { KeyboardBackspace } from '@mui/icons-material';
-import { getChatRoomApi, getUserSearchApi } from 'apps/main/src/api';
+import {
+  getChatRoomApi,
+  getUserSearchApi,
+  readRoomsApi,
+} from 'apps/main/src/api';
 import { useRecoilState } from 'recoil';
 import { userState } from 'apps/main/src/stores';
 import { handleTimeString } from 'apps/main/src/utils/time';
@@ -176,6 +180,28 @@ export function ChatPopoverMolecule({
       socket.off(user.id + EVENTS.VOICE_CHAT);
     };
   }, []);
+
+  // read rooms
+  useEffect(() => {
+    const readChatRooms = async () => {
+      await readRoomsApi();
+    };
+
+    readChatRooms();
+  }, []);
+
+  // display room popup
+  useEffect(() => {
+    if (chatrooms) {
+      const unreadRoom = chatrooms.items.filter(
+        (room: any) => !room.isRead && room.lastMessage.userId !== user.id
+      );
+
+      unreadRoom.forEach((room: any) => addRoom(room.id));
+
+      console.log(unreadRoom);
+    }
+  }, [chatrooms]);
 
   return (
     <>

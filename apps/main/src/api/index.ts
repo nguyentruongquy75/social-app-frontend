@@ -13,6 +13,7 @@ export * from './comment/delete';
 export * from './notification/read';
 export * from './search/get';
 export * from './chat/get';
+export * from './chat/read';
 export * from './chat/sendMessage';
 export * from './invitation/accept';
 export * from './invitation/decline';

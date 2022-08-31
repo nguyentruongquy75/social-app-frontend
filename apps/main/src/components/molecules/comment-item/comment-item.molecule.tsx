@@ -63,7 +63,7 @@ export function CommentItemMolecule({
   const { anchorEl, open, close, isDisplay } = usePopover();
   const longPress = useLongPress(
     open.bind(null, null, reactButtonRef.current),
-    1000
+    700
   );
 
   const [isLoading, setIsLoading] = useState(false);

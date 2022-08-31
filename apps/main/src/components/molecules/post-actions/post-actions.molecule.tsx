@@ -24,7 +24,7 @@ export function PostActions({ postId, reactions, displayPostComment }: Props) {
   const { anchorEl, open, close, isDisplay } = usePopover();
   const longPress = useLongPress(
     open.bind(null, null, reactButtonRef.current),
-    1000
+    700
   );
 
   const [userReaction, setUserReaction] = useState<null | {

@@ -65,9 +65,14 @@ export function Header({}: Props) {
 
             <Grid item>
               <Stack direction="row" gap={1}>
-                <IconButtonAtom tooltip="Tin nhắn" onClick={displayChatPopover}>
-                  <Chat />
-                </IconButtonAtom>
+                <Badge badgeContent={chatrooms?.unreadCount} color="primary">
+                  <IconButtonAtom
+                    tooltip="Tin nhắn"
+                    onClick={displayChatPopover}
+                  >
+                    <Chat />
+                  </IconButtonAtom>
+                </Badge>
 
                 <Badge
                   badgeContent={notifications?.unreadNotificationCount}

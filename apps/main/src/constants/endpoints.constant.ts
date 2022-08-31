@@ -22,6 +22,7 @@ export const CHAT_ENDPOINT = {
   BASE: 'chat',
   MESSAGE: '/message',
   SEEN: '/seen',
+  READ: '/read',
 };
 
 export const NOTIFICATION_ENDPOINT = {
